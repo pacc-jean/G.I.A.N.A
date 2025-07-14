@@ -1,0 +1,16 @@
+{
+  "bio": "Luca is a software developer who loves Liverpool and dreams big. Chill but focused, he's building G.I.A.N.A to conquer the digital world.",
+  "skills": ["Python", "Flask", "Node.js", "SQLite"],
+  "projects": [
+    {
+      "name": "G.I.A.N.A",
+      "description": "A self-hosted, backend-first AI assistant with personality, memory, and modular brains.",
+      "link": "https://yourportfolio.com/giana"
+    },
+    {
+      "name": "Portfolio Website",
+      "description": "A slick, custom personal site showcasing projects and contact info.",
+      "link": "https://yourportfolio.com"
+    }
+  ]
+}

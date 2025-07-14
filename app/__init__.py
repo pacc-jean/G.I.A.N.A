@@ -1,14 +1,16 @@
 from flask import Flask
 from flask_cors import CORS
 from app.routes.main import main_bp
+from app.core.config import Config
+from app.core.extensions import db  # 👈 import from extensions
 
 def create_app():
     app = Flask(__name__)
+    app.config.from_object(Config)
 
-    # Enable CORS for all origins (adjust for prod)
+    db.init_app(app)
     CORS(app)
 
-    # Register Blueprints
     app.register_blueprint(main_bp)
 
     return app

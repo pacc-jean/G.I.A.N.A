@@ -1,43 +1,56 @@
 import requests
+from app.core.config import Config
 
 def generate_response(messages: list[dict], username: str = None) -> dict:
     """
-    Send message history to Ollama (Mistral) and return the model's response.
+    Send message history to Ollama and return the model's response.
+    Uses env/config for model + host + timeout.
     """
 
-    prompt = [
-        {"role": m["role"], "content": m["content"]}
-        for m in messages
-    ]
+    # Build chat-style history
+    prompt = [{"role": m["role"], "content": m["content"]} for m in messages]
 
     if username:
-        system_prompt = {
+        prompt.insert(0, {
             "role": "system",
             "content": (
-                f"You are G.I.A.N.A, a clever and witty AI assistant created by Luca. "
-                f"You're helpful, poetic, and talk like Gen Z but still give serious answers. "
-                f"The user you're helping is named {username.title()}."
+                f"You are G.I.A.N.A, a clever, witty AI assistant created by Luca. "
+                f"Speak with a poetic Gen Z vibe but deliver clear, correct help. "
+                f"The user is {username.title()}."
             )
-        }
-        prompt.insert(0, system_prompt)
+        })
 
     try:
         res = requests.post(
-            "http://localhost:11434/api/chat",
+            f"{Config.OLLAMA_HOST}/api/chat",
             json={
-                "model": "mistral",
+                "model": Config.OLLAMA_MODEL,
                 "messages": prompt,
-                "stream": False
+                "stream": False,
+                "options": {
+                    "num_predict": 80,
+                    "temperature": 0.7,
+                }
             },
-            timeout=120
+            timeout=Config.OLLAMA_TIMEOUT,
         )
-
         res.raise_for_status()
         data = res.json()
+        text = data.get("message", {}).get("content", "").strip()
+        if not text:
+            text = "[No response 🤔]"
+        return {"text": text, "action": None}
 
-        return {"text": data.get("message", {}).get("content", ""), "action": None}
-
+    except requests.exceptions.Timeout:
+        print("🕒 Ollama timeout.")
+    except requests.exceptions.ConnectionError:
+        print("🔌 Cannot reach Ollama at", Config.OLLAMA_HOST)
+    except requests.exceptions.HTTPError as err:
+        print(f"📡 Ollama HTTP {err.response.status_code}: {err.response.text}")
     except Exception as e:
-        print("❌ Error generating response:", e)
-        return {"text": "Hmm… something went wrong with my brain (LLM connection failed).", "action": None}
+        print("❌ Unexpected Ollama error:", e)
 
+    return {
+        "text": "My brain’s offline (LLM connection failure). Try again in a sec.",
+        "action": None,
+    }

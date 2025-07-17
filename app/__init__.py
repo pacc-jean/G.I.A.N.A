@@ -2,7 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from app.routes.main import main_bp
 from app.core.config import Config
-from app.core.extensions import db  # 👈 import from extensions
+from app.core.extensions import db
 
 def create_app():
     app = Flask(__name__)
